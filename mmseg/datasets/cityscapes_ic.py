@@ -63,8 +63,10 @@ class CityscapesICDataset(Dataset):
                 events_gan_name = image_path.replace('leftImg8bit', 'leftImg8bit_EventGAN')[:-13] + '.png'
                 self.file_path['events_gan'].append(events_gan_name)
 
-                events_gan_name = image_path.replace('leftImg8bit', 'leftImg8bit_esim')[:-13] + '.png'
-                self.file_path['events_esim'].append(events_gan_name)
+                # NOTE: comment these lines due to non-existence key of events_esim
+                # print("self.file_path.key", self.file_path.keys())
+                # events_gan_name = image_path.replace('leftImg8bit', 'leftImg8bit_esim')[:-13] + '.png'
+                # self.file_path['events_esim'].append(events_gan_name)
 
         self.image_resize_size = image_resize_size
         self.image_crop_size = image_crop_size
@@ -150,6 +152,7 @@ class CityscapesICDataset(Dataset):
         x = random.randint(0, self.image_resize_size[0] - self.image_crop_size[0])
         y = random.randint(0, self.image_resize_size[1] - self.image_crop_size[1])
 
+        # TODO: be careful with this part
         if 'image' in self.outputs:
             raw_image = Image.open(self.file_path['image'][idx]).convert('RGB')
             resize_image = raw_image.resize(size=self.image_resize_size, resample=Image.BILINEAR)
@@ -161,6 +164,7 @@ class CityscapesICDataset(Dataset):
             image = self.image_transform(crop_image)
             output['image'] = image
 
+        # TODO: be careful with this part
         if 'label' in self.outputs:
             raw_label = Image.open(self.file_path['label'][idx])
             label = raw_label.resize(size=self.image_resize_size, resample=Image.NEAREST)
@@ -208,6 +212,7 @@ class CityscapesICDataset(Dataset):
                 img_time_res = img_time_res.repeat(3, 1, 1)
             output['img_time_res'] = img_time_res
 
+        # TODO: be careful with the augmentation with this part
         if 'img_self_res' in self.outputs:
             if self.high_resolution_isr:
                 img_self_res = get_image_change_from_pil(raw_image, width=raw_image.size[0],

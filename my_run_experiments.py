@@ -437,8 +437,9 @@ if __name__ == '__main__':
         #     cfg['uda']['isr_parms'] = ''
 
         if args.server_type != '':
-            cityscapes_dataset_path = args.root_path + 'data/cityscapes/'
-            dark_zurich_dataset = args.root_path + 'data/dark_zurich/'
+            # NOTE: stop hardcode the path here
+            cityscapes_dataset_path = os.path.join(args.root_path, 'cityscapes/')
+            dark_zurich_dataset = os.path.join(args.root_path, 'dark_zurich/')
             cfg['data']['train']['source']['dataset_path'] = cityscapes_dataset_path
             cfg['data']['train']['source_json_root'] = cityscapes_dataset_path
             if cfg['data']['val']['type'] == 'DarkZurichICDataset':

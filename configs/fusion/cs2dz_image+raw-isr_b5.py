@@ -25,7 +25,15 @@ model = dict(
     decode_head=dict(type='DAFormerHeadFusion',
                      decoder_params=dict(train_type='cs2dz_image+raw-isr',
                                          share_decoder=True)),
-    train_type='cs2dz_image+raw-isr'
+    train_type='cs2dz_image+raw-isr',
+    # NOTE: add vp path here
+    VANISHING_POINT = "/home/aghosh/Projects/2PCNet/Datasets/VP/train_day.json",
+    # NOTE: add warping augments here
+    warp_aug_lzu = True, # for debug
+    warp_fovea = True, # for debug
+    warp_fovea_inst = False,
+    warp_fovea_mix = False,
+    warp_middle = False,
 )
 
 # Modifications to Basic UDA

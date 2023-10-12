@@ -11,6 +11,9 @@ from .. import builder
 from ..builder import SEGMENTORS
 from .base import BaseSegmentor, BaseSegmentorEvents, BaseSegmentorFusion
 
+# NOTE: use symlink for now. Use git submodule or subtree later.
+from .transforms.fovea import process_and_update_features, build_grid_net
+import os, json
 
 @SEGMENTORS.register_module()
 class EncoderDecoder(BaseSegmentor):
@@ -677,7 +680,26 @@ class FusionEncoderDecoder(BaseSegmentorFusion):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
 
+        self.before_train_json(VP=kwargs['VANISHING_POINT'])
+        self.grid_net = build_grid_net(kwargs['warp_aug_lzu'],
+                                        kwargs['warp_fovea'],
+                                        kwargs['warp_fovea_inst'],
+                                        kwargs['warp_fovea_mix'],
+                                        kwargs['warp_middle'],)
+        print("self.grid_net is", self.grid_net)
+
         # assert self.with_decode_head
+
+    # NOTE: read vp from here
+    def before_train_json(self, VP): 
+        # print("self.VANISHING_POINT is", VP)
+        if VP is not None:
+            with open(VP, 'r') as f:
+                self.vanishing_point = json.load(f)
+            self.vanishing_point = {os.path.basename(k): v for k, v in self.vanishing_point.items()}
+        else:
+            self.vanishing_point = None
+        # print("self.vanishing_point is", self.vanishing_point)
 
     def _init_decode_head(self, decode_head):
         """Initialize ``decode_head``"""
@@ -696,9 +718,13 @@ class FusionEncoderDecoder(BaseSegmentorFusion):
                 self.auxiliary_head = builder.build_head(auxiliary_head)
 
     def extract_feat(self, image, events, img_self_res=None, cfg=None):
+        # print("====>image shape", image.shape) # [2, 3, 512, 512]
         """Extract features from images."""
+        # TODO: add process_and_update_features() to here
         f_image = self.backbone_image(image.detach()) if image is not None else None
+        # print("====>len(f_image)", len(f_image)); print("====>f_image[0].shape", f_image[0].shape) # 4 * [2, 64, 128, 128]
         f_events = self.backbone_events(events.detach()) if events is not None else None
+        # print("====>len(f_events)", len(f_events)); print("====>f_events[0].shape", f_events[0].shape) # 4 * [2, 64, 128, 128]
         f_img_self_res = self.backbone_events(img_self_res.detach()) if img_self_res is not None else None
         if 'no_fusion' in cfg.keys() and cfg['no_fusion']:
             f_fusion = None
